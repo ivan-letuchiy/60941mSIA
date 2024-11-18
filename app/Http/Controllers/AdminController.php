@@ -72,35 +72,36 @@ class AdminController extends Controller
 
         return redirect()->route('admin')->with('success', 'Meeting created successfully!');
     }
-
-    public function showVotes(): \Illuminate\Contracts\View\View|\Illuminate\Contracts\View\Factory|\Illuminate\Foundation\Application
-    {
-        $houses = $this->voteService->getAllHouses();
-        return view('showVotes', compact('houses'));
-    }
-
-    public function getMeetings(Request $request): \Illuminate\Http\JsonResponse
-    {
-        // Получаем ID дома из запроса
-        $houseId = $request->input('house_id');
-
-        // Получаем собрания для дома
-        $meetings = $this->voteService->getMeetingsForHouse($houseId);
-
-        // Возвращаем JSON с meeting_id и датами собраний
-        return response()->json($meetings);
-    }
-
-    public function getVotes(Request $request): \Illuminate\Http\JsonResponse
-    {
-        // Получаем ID собрания из запроса
-        $meetingId = $request->input('meeting_id');
-
-        // Получаем данные о голосах по ID собрания
-        $votesData = $this->voteService->getVotesByMeeting($meetingId);
-
-        // Возвращаем JSON с результатами голосования
-        return response()->json($votesData);
-    }
-
 }
+//
+//    public function showVotes(): \Illuminate\Contracts\View\View|\Illuminate\Contracts\View\Factory|\Illuminate\Foundation\Application
+//    {
+//        $houses = $this->voteService->getAllHouses();
+//        return view('showVotes', compact('houses'));
+//    }
+//
+//    public function getMeetings(Request $request): \Illuminate\Http\JsonResponse
+//    {
+//        // Получаем ID дома из запроса
+//        $houseId = $request->input('house_id');
+//
+//        // Получаем собрания для дома
+//        $meetings = $this->voteService->getMeetingsForHouse($houseId);
+//
+//        // Возвращаем JSON с meeting_id и датами собраний
+//        return response()->json($meetings);
+//    }
+//
+//    public function getVotes(Request $request): \Illuminate\Http\JsonResponse
+//    {
+//        // Получаем ID собрания из запроса
+//        $meetingId = $request->input('meeting_id');
+//
+//        // Получаем данные о голосах по ID собрания
+//        $votesData = $this->voteService->getVotesByMeeting($meetingId);
+//
+//        // Возвращаем JSON с результатами голосования
+//        return response()->json($votesData);
+//    }
+//
+//}
