@@ -12,9 +12,9 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('houses', function (Blueprint $table) {
-            $table->id('house_id');
-            $table->timestamps();
+            $table->id('house_id'); // Первичный ключ с автоинкрементом
             $table->string('house_name')->nullable()->comment('Улица и номер дома.');
+            $table->timestamps();
         });
     }
 

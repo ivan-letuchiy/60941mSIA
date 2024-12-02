@@ -15,11 +15,10 @@ return new class extends Migration {
             $table->unsignedBigInteger('flat_id');
             $table->unsignedBigInteger('owner_id');
             $table->decimal('ownership_percentage', 5, 2)->default(100);
-            $table->timestamps(); // Добавляет столбцы created_at и updated_at
-
             $table->foreign('flat_id')->references('flat_id')->on('flats')->onDelete('cascade');
             $table->foreign('owner_id')->references('owner_id')->on('owners')->onDelete('cascade');
         });
+
 
     }
 

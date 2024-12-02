@@ -2,106 +2,93 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Answer;
 use App\Models\House;
+use App\Models\Meeting;
+use App\Models\Question;
 use App\Services\HouseService;
 use App\Services\MeetingService;
-use App\Services\VoteService;
+use Illuminate\Contracts\View\View;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 
 class AdminController extends Controller
 {
     private HouseService $houseService;
     private MeetingService $meetingService;
-    private VoteService $voteService;
 
-    public function __construct(HouseService $houseService, MeetingService $meetingService, VoteService $voteService)
+    public function __construct(HouseService $houseService, MeetingService $meetingService)
     {
         $this->houseService = $houseService;
         $this->meetingService = $meetingService;
-        $this->voteService = $voteService;
     }
 
-    public function index(): \Illuminate\Contracts\View\View|\Illuminate\Contracts\View\Factory|\Illuminate\Foundation\Application
+    public function index(): View
     {
         return view('adminPanel');
     }
 
-
-    public function create(): \Illuminate\Contracts\View\View|\Illuminate\Contracts\View\Factory|\Illuminate\Foundation\Application
+    public function create(): View
     {
         return view('createHouses');
     }
 
-    public function store(Request $request): \Illuminate\Http\RedirectResponse
+    public function store(Request $request): RedirectResponse
     {
-        $request->validate([
-            'house_name' => 'required|string|max:255',
-            'start_apartment' => 'required|integer',
+        $validated = $request->validate([
+            'house_name' => 'required|string|max:255|unique:houses,house_name',
+            'start_apartment' => 'required|integer|min:1',
             'end_apartment' => 'required|integer|gt:start_apartment',
         ]);
 
-        $house = $this->houseService->createHouseWithFlats(
-            $request->input('house_name'),
-            $request->input('start_apartment'),
-            $request->input('end_apartment')
-        );
-
-        // Перенаправление на страницу с созданным домом или показ сообщения об успешной операции
-        return redirect()->route('admin')->with('success', 'Дом создан успешно!');
+        $this->houseService->createHouseWithFlats($validated['house_name'], $validated['start_apartment'], $validated['end_apartment']);
+        return redirect()->route('admin.panel')->with('success', 'Дом создан успешно!');
     }
 
-    public function createMeeting(): \Illuminate\Contracts\View\View|\Illuminate\Contracts\View\Factory|\Illuminate\Foundation\Application
+    public function createMeeting(): View
     {
         $houses = House::all();
         return view('createMeeting', compact('houses'));
     }
 
-    public function storeMeeting(Request $request): \Illuminate\Http\RedirectResponse
+    public function storeMeeting(Request $request): RedirectResponse
     {
-        $request->validate([
-            'house_name' => 'required|string',
+        $validated = $request->validate([
+            'house_id' => 'required|exists:houses,house_id',
             'date' => 'required|date',
-            'question' => 'required|string',
+            'questions' => 'required|array',
+            'questions.*.text' => 'required|string',
+            'questions.*.answers' => 'required|array|min:1',
+            'questions.*.answers.*' => 'required|string',
         ]);
 
-        $meeting = $this->meetingService->createMeeting(
-            $request->input('house_name'),
-            $request->input('date'),
-            $request->input('question')
-        );
+        // Создание собрания
+        $meeting = Meeting::create([
+            'house_id_for_meetings' => $validated['house_id'],
+            'date' => $validated['date'],
+        ]);
 
-        return redirect()->route('admin')->with('success', 'Meeting created successfully!');
+        // Проверка, создано ли собрание
+        if (!$meeting) {
+            return redirect()->back()->withErrors('Ошибка создания собрания.');
+        }
+
+        // Сохранение вопросов и ответов
+        foreach ($validated['questions'] as $questionData) {
+            $question = Question::create([
+                'meeting_id_for_question' => $meeting->meeting_id,
+                'question' => $questionData['text'],
+            ]);
+
+            foreach ($questionData['answers'] as $answerText) {
+                Answer::create([
+                    'question_id_for_answers' => $question->question_id,
+                    'answer_text' => $answerText,
+                ]);
+            }
+        }
+
+        return redirect()->route('admin.panel')->with('success', 'Собрание создано успешно!');
     }
+
 }
-//
-//    public function showVotes(): \Illuminate\Contracts\View\View|\Illuminate\Contracts\View\Factory|\Illuminate\Foundation\Application
-//    {
-//        $houses = $this->voteService->getAllHouses();
-//        return view('showVotes', compact('houses'));
-//    }
-//
-//    public function getMeetings(Request $request): \Illuminate\Http\JsonResponse
-//    {
-//        // Получаем ID дома из запроса
-//        $houseId = $request->input('house_id');
-//
-//        // Получаем собрания для дома
-//        $meetings = $this->voteService->getMeetingsForHouse($houseId);
-//
-//        // Возвращаем JSON с meeting_id и датами собраний
-//        return response()->json($meetings);
-//    }
-//
-//    public function getVotes(Request $request): \Illuminate\Http\JsonResponse
-//    {
-//        // Получаем ID собрания из запроса
-//        $meetingId = $request->input('meeting_id');
-//
-//        // Получаем данные о голосах по ID собрания
-//        $votesData = $this->voteService->getVotesByMeeting($meetingId);
-//
-//        // Возвращаем JSON с результатами голосования
-//        return response()->json($votesData);
-//    }
-//
-//}

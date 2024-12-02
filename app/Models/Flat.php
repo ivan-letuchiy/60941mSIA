@@ -19,8 +19,10 @@ class Flat extends Model
     public function ownerM(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
     {
         return $this->belongsToMany(Owner::class, 'flat_owner', 'flat_id', 'owner_id')
-            ->withPivot('ownership_percentage')
-            ->withTimestamps();
+            ->withPivot('ownership_percentage'); // Добавляем только нужные поля
     }
+
+
+
 
 }

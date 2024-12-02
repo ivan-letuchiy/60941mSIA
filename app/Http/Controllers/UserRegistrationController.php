@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Flat;
 use App\Models\House;
 use App\Services\RegistrationService;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class UserRegistrationController extends Controller
@@ -41,14 +42,10 @@ class UserRegistrationController extends Controller
     }
 
     // Получение списка квартир по ID дома
-    public function getFlatsByHouse($houseId): \Illuminate\Http\JsonResponse
+    public function getFlatsByHouse(House $house): JsonResponse
     {
-        $flats = Flat::where('house_id_for_flats', $houseId)->get();
-
-        if ($flats->isEmpty()) {
-            return response()->json(['error' => 'Квартиры не найдены'], 404);
-        }
-
-        return response()->json($flats);
+        $flats = $house->flats;
+        return response()->json(['apartments' => $flats]);
     }
+
 }

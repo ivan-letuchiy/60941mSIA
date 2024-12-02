@@ -37,12 +37,12 @@ class Owner extends Model
     {
         return $this->hasMany(Vote::class, 'owner_id_for_vote');
     }
-
     public function flatsM(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
     {
         return $this->belongsToMany(Flat::class, 'flat_owner', 'owner_id', 'flat_id')
             ->withPivot('ownership_percentage');
     }
+
 
 }
 
