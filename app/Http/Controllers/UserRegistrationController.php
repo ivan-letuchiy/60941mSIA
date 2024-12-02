@@ -16,44 +16,37 @@ class UserRegistrationController extends Controller
         $this->registrationService = $registrationService;
     }
 
-    // Отображение страницы регистрации
-    public function showRegistrationForm(): \Illuminate\Contracts\View\View|\Illuminate\Contracts\View\Factory|\Illuminate\Foundation\Application
+    // Отображение формы регистрации
+    public function showRegistrationForm(): \Illuminate\Contracts\View\View
     {
         $houses = House::all();
         return view('registrationPage', compact('houses'));
     }
 
-    // Обработка регистрации с валидацией данных
+    // Обработка данных регистрации
     public function register(Request $request): \Illuminate\Http\RedirectResponse
     {
-        // Валидация данных
         $validatedData = $request->validate([
             'full_name' => 'required|string|max:255',
+            'email' => 'required|email|unique:users,email',
+            'password' => 'required|string|min:6|confirmed',
             'house_id' => 'required|exists:houses,house_id',
             'flat_id' => 'required|exists:flats,flat_id',
-            'area_of_the_apartment' => 'required|numeric|min:10|max:500' // площадь от 10 до 500 кв.м.
+            'area_of_the_apartment' => 'required|numeric|min:10|max:500'
         ]);
 
-        // Добавляем владельца
-        $owner = $this->registrationService->addOwner($request);
+        $this->registrationService->registerUserWithFlat($validatedData);
 
-        // Обработка выбора дома и квартиры
-        $selectedHouseId = $request->input('house_id');
-        $selectedFlatId = $request->input('flat_id');
-
-        // Обновление площади квартиры и привязка владельца
-        $this->registrationService->assignFlatToOwner($request, $owner, $selectedHouseId, $selectedFlatId);
-
-        return redirect()->route('registration.success');
+        return redirect()->route('registration.success')->with('message', 'Регистрация прошла успешно!');
     }
 
-    public function getFlatsByHouse($house_id): \Illuminate\Http\JsonResponse
+    // Получение списка квартир по ID дома
+    public function getFlatsByHouse($houseId): \Illuminate\Http\JsonResponse
     {
-        $flats = Flat::where('house_id_for_flats', $house_id)->get();
+        $flats = Flat::where('house_id_for_flats', $houseId)->get();
 
-        // Проверка, чтобы убедиться, что квартиры найдены
         if ($flats->isEmpty()) {
-            return response()->json(['error' => 'No flats found'], 404);
+            return response()->json(['error' => 'Квартиры не найдены'], 404);
         }
 
         return response()->json($flats);

@@ -14,10 +14,13 @@ return new class extends Migration {
             $table->id('flat_owner_id');
             $table->unsignedBigInteger('flat_id');
             $table->unsignedBigInteger('owner_id');
-            $table->decimal('ownership_percentage', 5, 2)->default(100); // Доля владения
+            $table->decimal('ownership_percentage', 5, 2)->default(100);
+            $table->timestamps(); // Добавляет столбцы created_at и updated_at
+
             $table->foreign('flat_id')->references('flat_id')->on('flats')->onDelete('cascade');
             $table->foreign('owner_id')->references('owner_id')->on('owners')->onDelete('cascade');
         });
+
     }
 
     /**
@@ -25,6 +28,12 @@ return new class extends Migration {
      */
     public function down(): void
     {
-//
+        Schema::table('flat_owner', function (Blueprint $table) {
+            $table->dropForeign(['flat_id']); // Удаление внешнего ключа для flat_id
+            $table->dropForeign(['owner_id']); // Удаление внешнего ключа для owner_id
+        });
+
+        Schema::dropIfExists('flat_owner'); // Удаление таблицы
     }
+
 };

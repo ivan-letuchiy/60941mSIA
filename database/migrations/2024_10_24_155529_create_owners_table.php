@@ -15,6 +15,7 @@ return new class extends Migration {
             $table->timestamps();
             $table->string('full_name', 50)->nullable()->comment('Фамилия Имя Отчество');
             $table->decimal('ownership_interest', 5, 2)->nullable()->comment('Доля в праве.');
+            $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
         });
     }
 
@@ -23,6 +24,7 @@ return new class extends Migration {
      */
     public function down(): void
     {
-        Schema::dropIfExists('owners');
+        Schema::dropIfExists('owners'); // Удаление таблицы
     }
+
 };

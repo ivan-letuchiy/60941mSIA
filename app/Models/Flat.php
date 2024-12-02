@@ -7,8 +7,9 @@ use Illuminate\Database\Eloquent\Model;
 class Flat extends Model
 {
     protected $table = 'flats';
-    protected $primaryKey = 'flat_id';
-    protected $fillable = ['apartment_number', 'house_id_for_flats', 'area_of_the_apartment'];
+    protected $primaryKey = 'flat_id'; // Убедитесь, что указали правильный первичный ключ
+    protected $fillable = ['apartment_number', 'area_of_the_apartment', 'house_id_for_flats']; // Поля для массового заполнения
+
 
     public function house(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {
@@ -18,7 +19,8 @@ class Flat extends Model
     public function ownerM(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
     {
         return $this->belongsToMany(Owner::class, 'flat_owner', 'flat_id', 'owner_id')
-            ->withPivot('ownership_percentage');
+            ->withPivot('ownership_percentage')
+            ->withTimestamps();
     }
 
 }

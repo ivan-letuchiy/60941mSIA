@@ -1,28 +1,55 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Личный кабинет</title>
+    <title>Управление многоквартирными домами</title>
     <style>
         body {
-            text-align: center;
             font-family: Arial, sans-serif;
-        }
-        .container {
-            margin-top: 100px;
+            text-align: center;
+            margin: 0;
+            padding: 0;
             display: flex;
-            flex-direction: column
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f3f3f3;
+        }
+        h1 {
+            font-size: 2rem;
+            margin-bottom: 20px;
+        }
+        .button-container {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        button {
+            font-size: 1rem;
+            padding: 10px 20px;
+            cursor: pointer;
+            border: none;
+            border-radius: 5px;
+            background-color: #007bff;
+            color: white;
+            transition: background-color 0.3s ease;
+        }
+        button:hover {
+            background-color: #0056b3;
         }
     </style>
 </head>
 <body>
 <h1>Управление многоквартирными домами</h1>
-<h2>Создайте аккаунт или войдите в уже существующий</h2>
-<div class="container">
-    <a href="{{ route('user.registration') }}" class="btn btn-primary">Зарегистрироваться</a>
-    <a href="{{ route('owners.index') }}" class="btn btn-primary">Войти</a>
-    <a href="{{ route('admin') }}" class="btn btn-primary">Вход для администратора</a>
+<div class="button-container">
+    <form method="GET" action="{{ route('login') }}">
+        <button type="submit">Войти</button>
+    </form>
+    <form method="GET" action="{{ route('registration.form') }}">
+        <button type="submit">Зарегистрироваться</button>
+    </form>
 </div>
 </body>
 </html>

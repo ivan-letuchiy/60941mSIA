@@ -10,7 +10,7 @@ class Owner extends Model
     use HasFactory;
 
     protected $table = 'owners'; // Название таблицы, если она нестандартная
-    protected $primaryKey = 'owner_id'; // Указание первичного ключа
+    protected $primaryKey = 'owner_id'; // Убедитесь, что указали правильный первичный ключ
     public $incrementing = true; // Указывает, что ключ автоинкрементный
     protected $keyType = 'int'; // Указывает тип данных ключа
 
@@ -20,7 +20,13 @@ class Owner extends Model
         'flat_id',
         'area_of_the_apartment',
         'ownership_interest',
+        'user_id',
     ];
+
+    public function user(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    {
+        return $this->belongsTo(User::class);
+    }
 
     public function questionsM(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
     {
@@ -37,7 +43,6 @@ class Owner extends Model
         return $this->belongsToMany(Flat::class, 'flat_owner', 'owner_id', 'flat_id')
             ->withPivot('ownership_percentage');
     }
-
 
 }
 

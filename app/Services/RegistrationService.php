@@ -4,49 +4,41 @@ namespace App\Services;
 
 use App\Models\Flat;
 use App\Models\Owner;
-use Illuminate\Database\Eloquent\ModelNotFoundException;
-use Illuminate\Http\Request;
+use App\Models\User;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 
 class RegistrationService
 {
-    public function addOwner(Request $request): Owner
+    public function registerUserWithFlat(array $data)
     {
-        $owner = Owner::create([
-            'full_name' => $request->input('full_name'),
-            // остальные поля
+        // Создаём запись в таблице users
+        $user = User::create([
+            'name' => $data['full_name'], // Используем full_name как имя пользователя
+            'email' => $data['email'],
+            'password' => Hash::make($data['password']),
         ]);
 
-        return $owner;  // Возвращаем только что созданного владельца
+        // Создаём запись в таблице owners с указанием user_id
+        $owner = Owner::create([
+            'full_name' => $data['full_name'],
+            'ownership_interest' => 100, // Значение по умолчанию
+            'user_id' => $user->id, // Привязываем пользователя к владельцу
+        ]);
+
+        // Обновляем данные о квартире
+        $flat = Flat::findOrFail($data['flat_id']);
+        $flat->update([
+            'area_of_the_apartment' => $data['area_of_the_apartment']
+        ]);
+
+        // Связываем владельца с квартирой
+        $owner->flatsM()->attach($flat, [
+            'ownership_percentage' => 100,
+        ]);
+
+        Log::info('Пользователь и владелец зарегистрированы: ', ['user' => $user, 'owner' => $owner, 'flat' => $flat]);
     }
 
-    public function assignFlatToOwner(Request $request, Owner $owner, $houseId, $flatId)
-    {
-        try {
-            // Find the flat
-            $flat = Flat::where('house_id_for_flats', $houseId)
-                ->where('flat_id', $flatId)
-                ->firstOrFail();
-
-            // Update the flat's area
-            $flat->update([
-                'area_of_the_apartment' => $request->input('area_of_the_apartment')
-            ]);
-
-            Log::info('Assigning flat ID ' . $flat->id . ' to owner ID ' . $owner->id);
-
-            // Associate the owner with the flat
-            $owner->flatsM()->attach($flat);
-            $owner->save();
-
-            return ['success' => 'Flat assigned to owner successfully'];
-        } catch (ModelNotFoundException $e) {
-            return ['error' => 'Flat not found'];
-        } catch (\Exception $e) {
-            // Log the exception for debugging
-            Log::error('Error assigning flat to owner: ' . $e->getMessage());
-            return ['error' => 'An unexpected error occurred'];
-        }
-    }
 
 }
