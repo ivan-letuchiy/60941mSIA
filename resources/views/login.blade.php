@@ -1,31 +1,21 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Вход</title>
-</head>
-<body>
-@if (Auth::check())
-    <h1>Добро пожаловать, {{ Auth::user()->name }}!</h1>
-    <form method="POST" action="{{ route('logout') }}">
-        @csrf
-        <button type="submit">Выйти</button>
-    </form>
-@else
+@extends('layout')
+
+@section('title', 'Вход')
+
+@section('content')
     <h1>Вход</h1>
     <form method="POST" action="{{ route('login') }}">
         @csrf
-        <input type="email" name="email" placeholder="Email" required>
-        <input type="password" name="password" placeholder="Пароль" required>
-        <button type="submit">Войти</button>
+        <div class="mb-3">
+            <label for="email" class="form-label">Email:</label>
+            <input type="email" id="email" name="email" class="form-control @error('email') is-invalid @enderror" value="{{ old('email') }}" required>
+            @error('email') <div class="invalid-feedback">{{ $message }}</div> @enderror
+        </div>
+        <div class="mb-3">
+            <label for="password" class="form-label">Пароль:</label>
+            <input type="password" id="password" name="password" class="form-control @error('password') is-invalid @enderror" required>
+            @error('password') <div class="invalid-feedback">{{ $message }}</div> @enderror
+        </div>
+        <button type="submit" class="btn btn-primary">Войти</button>
     </form>
-    @if ($errors->any())
-        <p>{{ $errors->first() }}</p>
-    @endif
-@endif
-@if (session('success'))
-    <p style="color: green;">{{ session('success') }}</p>
-@endif
-</body>
-</html>
+@endsection

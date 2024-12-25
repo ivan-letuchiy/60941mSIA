@@ -1,45 +1,71 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Информация о квартире</title>
-</head>
-<body>
-<h1>Информация о квартире</h1>
-<p>Дом: {{ $flat->house->house_name }}</p>
-<p>Квартира: {{ $flat->apartment_number }}</p>
-<p>Площадь: {{ $flat->area_of_the_apartment }} м²</p>
-<p>
-    Доля в праве:
-    @if ($ownership && $ownership->pivot)
-        {{ $ownership->pivot->ownership_percentage }}%
-    @else
-        Не указано
+@extends('layout')
+
+@section('title', 'Электронное голосование')
+
+@section('content')
+    <h1 class="text-center">Электронное голосование</h1>
+
+    @php
+        use Carbon\Carbon;use Illuminate\Support\Facades\Auth;
+        $today = Carbon::now();
+        $owner = Auth::user()->owner;
+        $relevantMeetings = $flat->house->meetings->filter(function ($meeting) use ($owner, $today) {
+            $meetingDate = Carbon::parse($meeting->date);
+            $isUpcoming = $meetingDate->isFuture() || $meetingDate->isToday();
+            $isRecent = $meetingDate->isPast() && $meetingDate->diffInDays($today) < 1;
+            $hasNotVoted = $meeting->questions->filter(function ($question) use ($owner) {
+                return !$owner->votes->contains('question_id', $question->id);
+            })->isNotEmpty();
+
+            return ($isUpcoming || $isRecent) && $hasNotVoted;
+        });
+    @endphp
+
+    @if (session('success'))
+        <div class="alert alert-success mt-4">{{ session('success') }}</div>
     @endif
-</p>
 
-<h2>Редактировать данные</h2>
-<form method="POST" action="{{ route('user.flat.update', $flat->flat_id) }}">
-    @csrf
-    <label for="area_of_the_apartment">Площадь квартиры (м²):</label>
-    <input type="number" step="1.0" id="area_of_the_apartment" name="area_of_the_apartment"
-           value="{{ $flat->area_of_the_apartment }}" required>
+    @if ($relevantMeetings->isEmpty())
+        <p class="text-center">Нет доступных собраний для голосования.</p>
+    @else
+        @foreach ($relevantMeetings as $meeting)
+            <h3 class="mt-4">Собрание от {{ \Carbon\Carbon::parse($meeting->date)->format('d.m.Y') }}</h3>
 
-    <label for="ownership_percentage">Доля в праве (%):</label>
-    <input type="number" step="1.0" id="ownership_percentage" name="ownership_percentage"
-           value="{{ $ownership && $ownership->pivot ? $ownership->pivot->ownership_percentage : '' }}" required>
+            <form method="POST" action="{{ route('user.vote.submit') }}">
+                @csrf
+                @foreach ($meeting->questions as $question)
+                    <p><strong>{{ $question->question_text }}</strong></p>
+                    @foreach ($question->answers as $answer)
+                        <div class="form-check">
+                            <input type="radio" class="form-check-input" name="answers[{{ $question->id }}]"
+                                   value="{{ $answer->id }}" id="answer{{ $answer->id }}" required>
+                            <label class="form-check-label"
+                                   for="answer{{ $answer->id }}">{{ $answer->answer_text }}</label>
+                        </div>
+                    @endforeach
+                @endforeach
+                <button type="submit" class="btn btn-success mt-3">Проголосовать</button>
+            </form>
+        @endforeach
+    @endif
 
-    <button type="submit">Сохранить изменения</button>
-</form>
+    <h3 class="mt-5">Информация о квартире</h3>
+    <p><strong>Адрес:</strong> {{ $flat->house->house_name }}</p>
+    <p><strong>Номер квартиры:</strong> {{ $flat->apartment_number }}</p>
+    <p><strong>Доля в
+            праве:</strong> {{ $flat->owners->firstWhere('id', $owner->id)?->pivot->ownership_percentage ?? 'N/A' }}%
+    </p>
+    <p><strong>Площадь:</strong> {{ $flat->area }} м²</p>
 
-<form method="POST" action="{{ route('user.flat.removeOwner', $flat->flat_id) }}">
-    @csrf
-    <button type="submit" onclick="return confirm('Вы уверены, что хотите удалить связь с этим помещением?')">Удалить помещение</button>
-</form>
-
-<a href="{{ route('user.page') }}">
-    <button>Назад</button>
-</a>
-</body>
-</html>
+    <h4 class="mt-4">Редактирование доли в праве</h4>
+    <form method="POST" action="{{ route('user.flat.updateOwnership', $flat->id) }}">
+        @csrf
+        <div class="mb-3">
+            <label for="ownership_percentage" class="form-label">Доля в праве (%)</label>
+            <input type="number" step="0.01" id="ownership_percentage" name="ownership_percentage" class="form-control"
+                   value="{{ $flat->owners->firstWhere('id', $owner->id)?->pivot->ownership_percentage ?? '' }}"
+                   required>
+        </div>
+        <button type="submit" class="btn btn-primary">Сохранить изменения</button>
+    </form>
+@endsection

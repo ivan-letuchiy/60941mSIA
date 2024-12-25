@@ -11,11 +11,11 @@ return new class extends Migration {
     public function up(): void
     {
         Schema::create('owners', function (Blueprint $table) {
-            $table->id('owner_id');
+            $table->id('id');
+            $table->string('full_name', 50)->comment('ФИО');
+            $table->decimal('ownership_interest', 5, 2)->nullable()->comment('Доля в собственности');
+            $table->foreignId('user_id')->nullable()->constrained('users')->onDelete('set null');
             $table->timestamps();
-            $table->string('full_name', 50)->nullable()->comment('Фамилия Имя Отчество');
-            $table->decimal('ownership_interest', 5, 2)->nullable()->comment('Доля в праве.');
-            $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
         });
     }
 
@@ -24,7 +24,6 @@ return new class extends Migration {
      */
     public function down(): void
     {
-        Schema::dropIfExists('owners'); // Удаление таблицы
+        Schema::dropIfExists('owners');
     }
-
 };

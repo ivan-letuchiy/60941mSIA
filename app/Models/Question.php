@@ -4,33 +4,25 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Question extends Model
 {
-    // Таблица, связанная с моделью
-    protected $table = 'questions';
+    protected $fillable = ['meeting_id', 'question_text'];
 
-    // Первичный ключ
-    protected $primaryKey = 'question_id';
-
-    // Автоинкремент
-    public $incrementing = true;
-
-    // Тип данных для первичного ключа
-    protected $keyType = 'int';
-
-    // Разрешённые для массового заполнения поля
-    protected $fillable = ['meeting_id_for_question', 'question'];
-
-    // Связь с таблицей `answers`
-    public function answers(): \Illuminate\Database\Eloquent\Relations\HasMany
+    public function meeting(): BelongsTo
     {
-        return $this->hasMany(Answer::class, 'question_id_for_answers', 'question_id');
+        return $this->belongsTo(Meeting::class);
     }
 
-    // Связь с таблицей `meetings`
-    public function meeting(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    public function answers(): HasMany
     {
-        return $this->belongsTo(Meeting::class, 'meeting_id_for_question', 'meeting_id');
+        return $this->hasMany(Answer::class);
+    }
+
+    public function votes(): HasMany
+    {
+        return $this->hasMany(Vote::class);
     }
 }

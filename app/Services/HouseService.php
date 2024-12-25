@@ -2,25 +2,29 @@
 
 namespace App\Services;
 
-use App\Models\Flat;
-use App\Models\House;
+use App\Models\{Flat, House};
+use Exception;
+use Illuminate\Support\Facades\Log;
 
 class HouseService
 {
-    public function createHouseWithFlats(string $houseName, int $startApartment, int $endApartment)
+    public function createHouseWithFlats(string $houseName, int $startApartment, int $endApartment): House
     {
-        // Создаем дом и получаем его идентификатор
-        $house = House::create(['house_name' => $houseName]);
+        try {
+            $house = House::create(['house_name' => $houseName]);
 
-        // Используем $house->house_id вместо $house->id
-        for ($i = $startApartment; $i <= $endApartment; $i++) {
-            Flat::create([
-                'apartment_number' => $i,
-                'house_id_for_flats' => $house->house_id, // Исправление: используем house_id
-            ]);
+            for ($i = $startApartment; $i <= $endApartment; $i++) {
+                Flat::create([
+                    'apartment_number' => $i,
+                    'house_id' => $house->id,
+                    'area' => 50, // Задаём стандартное значение для площади
+                ]);
+            }
+
+            return $house;
+        } catch (Exception $e) {
+            Log::error('Error creating house and flats', ['message' => $e->getMessage()]);
+            throw new Exception('Ошибка при создании дома и квартир.');
         }
-
-        return $house;
     }
 }
-

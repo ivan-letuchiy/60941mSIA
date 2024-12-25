@@ -4,8 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
-{
+return new class extends Migration {
     /**
      * Run the migrations.
      */
@@ -15,13 +14,25 @@ return new class extends Migration
         if (!Schema::hasTable('users')) {
             Schema::create('users', function (Blueprint $table) {
                 $table->id();
-                $table->string('name');
+                $table->string('name'); // Колонка 'name'
                 $table->string('email')->unique();
                 $table->timestamp('email_verified_at')->nullable();
                 $table->string('password');
                 $table->string('role')->default('user'); // Роль пользователя: 'user' или 'admin'
                 $table->rememberToken();
                 $table->timestamps();
+            });
+        }
+
+        // Проверка, существует ли таблица 'owners'
+        if (Schema::hasTable('owners')) {
+            // Добавление внешнего ключа после создания таблицы
+            Schema::table('users', function (Blueprint $table) {
+                $table->foreign('name')  // Колонка 'name' в таблице 'users'
+                ->references('full_name') // Ссылается на колонку 'full_name' в таблице 'owners'
+                ->on('owners') // Таблица 'owners'
+                ->onDelete('cascade')  // При удалении владельца, все связанные пользователи тоже будут удалены
+                ->onUpdate('cascade'); // При обновлении данных владельца, обновятся все связанные пользователи
             });
         }
 

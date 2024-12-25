@@ -2,47 +2,27 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Owner extends Model
 {
-    use HasFactory;
+    protected $fillable = ['full_name', 'ownership_interest', 'user_id'];
 
-    protected $table = 'owners'; // Название таблицы, если она нестандартная
-    protected $primaryKey = 'owner_id'; // Убедитесь, что указали правильный первичный ключ
-    public $incrementing = true; // Указывает, что ключ автоинкрементный
-    protected $keyType = 'int'; // Указывает тип данных ключа
-
-    protected $fillable = [
-        'full_name',
-        'house_id',
-        'flat_id',
-        'area_of_the_apartment',
-        'ownership_interest',
-        'user_id',
-    ];
-
-    public function user(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    public function flats(): BelongsToMany
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsToMany(Flat::class, 'flat_owner')->withPivot('ownership_percentage');
     }
 
-    public function questionsM(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
+    public function votes(): HasMany
     {
-        return $this->belongsToMany(Question::class, 'votes');
+        return $this->hasMany(Vote::class);
     }
 
-    public function voteOr(): \Illuminate\Database\Eloquent\Relations\HasMany
+    public function user(): \Illuminate\Database\Eloquent\Relations\HasOne
     {
-        return $this->hasMany(Vote::class, 'owner_id_for_vote');
+        return $this->hasOne(User::class);
     }
-    public function flatsM(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
-    {
-        return $this->belongsToMany(Flat::class, 'flat_owner', 'owner_id', 'flat_id')
-            ->withPivot('ownership_percentage');
-    }
-
-
 }
-

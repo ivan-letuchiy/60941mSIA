@@ -4,16 +4,15 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
-{
+return new class extends Migration {
     /**
      * Run the migrations.
      */
     public function up(): void
     {
         Schema::create('houses', function (Blueprint $table) {
-            $table->id('house_id'); // Первичный ключ с автоинкрементом
-            $table->string('house_name')->nullable()->comment('Улица и номер дома.');
+            $table->id('id');
+            $table->string('house_name')->nullable()->comment('Улица и номер дома');
             $table->timestamps();
         });
     }

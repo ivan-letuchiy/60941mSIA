@@ -11,14 +11,11 @@ return new class extends Migration {
     public function up(): void
     {
         Schema::create('votes', function (Blueprint $table) {
-            $table->id('vote_id');
+            $table->id('id');
+            $table->foreignId('owner_id')->constrained('owners')->onDelete('cascade');
+            $table->foreignId('question_id')->constrained('questions')->onDelete('cascade');
+            $table->text('vote_answer')->nullable();
             $table->timestamps();
-            $table->unsignedBigInteger('owner_id_for_vote');
-            $table->unsignedBigInteger('question_id_for_vote');
-            $table->text('answer')->nullable()->comment('Ответ на вопрос собрания.');
-
-            $table->foreign('owner_id_for_vote')->references('owner_id')->on('owners')->onDelete('cascade');
-            $table->foreign('question_id_for_vote')->references('question_id')->on('questions')->onDelete('cascade');
         });
     }
 

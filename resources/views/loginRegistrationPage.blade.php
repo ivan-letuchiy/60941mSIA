@@ -1,55 +1,30 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Управление многоквартирными домами</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            text-align: center;
-            margin: 0;
-            padding: 0;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            background-color: #f3f3f3;
-        }
-        h1 {
-            font-size: 2rem;
-            margin-bottom: 20px;
-        }
-        .button-container {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-        }
-        button {
-            font-size: 1rem;
-            padding: 10px 20px;
-            cursor: pointer;
-            border: none;
-            border-radius: 5px;
-            background-color: #007bff;
-            color: white;
-            transition: background-color 0.3s ease;
-        }
-        button:hover {
-            background-color: #0056b3;
-        }
-    </style>
-</head>
-<body>
-<h1>Управление многоквартирными домами</h1>
-<div class="button-container">
-    <form method="GET" action="{{ route('login') }}">
-        <button type="submit">Войти</button>
-    </form>
-    <form method="GET" action="{{ route('registration.form') }}">
-        <button type="submit">Зарегистрироваться</button>
-    </form>
-</div>
-</body>
-</html>
+@extends('layout')
+
+@section('title', 'Вход и Регистрация')
+
+@section('content')
+    <div class="row">
+        <div class="col-md-6">
+            <h2>Вход</h2>
+            <form method="POST" action="{{ route('login') }}">
+                @csrf
+                <div class="mb-3">
+                    <label for="email" class="form-label">Email:</label>
+                    <input type="email" id="email" name="email" class="form-control @error('email') is-invalid @enderror" value="{{ old('email') }}" required>
+                    @error('email') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                </div>
+                <div class="mb-3">
+                    <label for="password" class="form-label">Пароль:</label>
+                    <input type="password" id="password" name="password" class="form-control @error('password') is-invalid @enderror" required>
+                    @error('password') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                </div>
+                <button type="submit" class="btn btn-primary w-100">Войти</button>
+            </form>
+        </div>
+        <div class="col-md-6">
+            <h2>Регистрация</h2>
+            <a href="{{ route('registration.form') }}" class="btn btn-success w-100">Перейти к регистрации</a>
+        </div>
+    </div>
+@endsection
+

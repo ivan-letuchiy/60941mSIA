@@ -3,15 +3,19 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Vote extends Model
 {
-    public function ownerVote(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    protected $fillable = ['owner_id', 'question_id', 'vote_answer'];
+
+    public function owner(): BelongsTo
     {
-        return $this->belongsTo(Owner::class, 'owner_id_for_vote');
+        return $this->belongsTo(Owner::class);
     }
-    public function questionVote(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+
+    public function question(): BelongsTo
     {
-        return $this->belongsTo(Question::class, 'question_id_for_vote');
+        return $this->belongsTo(Question::class);
     }
 }

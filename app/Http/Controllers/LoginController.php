@@ -2,19 +2,19 @@
 
 namespace App\Http\Controllers;
 
+use Illuminate\Contracts\View\View;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class LoginController extends Controller
 {
-    // Метод отображения страницы входа
-    public function login(): \Illuminate\Contracts\View\View
+    public function login(): View
     {
         return view('login');
     }
 
-    // Метод для аутентификации пользователя
-    public function authenticate(Request $request): \Illuminate\Http\RedirectResponse
+    public function authenticate(Request $request): RedirectResponse
     {
         $credentials = $request->validate([
             'email' => 'required|email',
@@ -23,20 +23,18 @@ class LoginController extends Controller
 
         if (Auth::attempt($credentials)) {
             $request->session()->regenerate();
-
             $user = Auth::user();
-            return redirect()->route($user->role === 'admin' ? 'admin.panel' : 'user.page')
-                ->with('success', 'Вы успешно вошли!');
+
+            return redirect()->route($user->role === 'admin' ? 'admin.panel' : 'user.page');
+
         }
 
         return back()->withErrors(['email' => 'Неверные данные для входа.'])->onlyInput('email');
     }
 
-    // Метод выхода из системы
-    public function logout(Request $request): \Illuminate\Http\RedirectResponse
+    public function logout(Request $request): RedirectResponse
     {
         Auth::logout();
-
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 

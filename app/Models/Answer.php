@@ -3,28 +3,21 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Answer extends Model
 {
-    // Таблица, связанная с моделью
-    protected $table = 'answers';
+    protected $fillable = ['question_id', 'answer_text'];
 
-    // Первичный ключ
-    protected $primaryKey = 'answer_id';
-
-    // Автоинкремент
-    public $incrementing = true;
-
-    // Тип данных для первичного ключа
-    protected $keyType = 'int';
-
-    // Разрешённые для массового заполнения поля
-    protected $fillable = ['question_id_for_answers', 'answer_text'];
-
-    // Связь с таблицей `questions`
-    public function question(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    public function votes(): HasMany
     {
-        return $this->belongsTo(Question::class, 'question_id_for_answers', 'question_id');
+        return $this->hasMany(Vote::class, 'vote_answer', 'id');
+    }
+
+    public function question(): BelongsTo
+    {
+        return $this->belongsTo(Question::class);
     }
 }
 

@@ -3,36 +3,41 @@
 namespace App\Services;
 
 use App\Models\Answer;
-use App\Models\House;
 use App\Models\Meeting;
 use App\Models\Question;
+use Carbon\Carbon;
+use Exception;
+use Illuminate\Support\Facades\Log;
+
 
 class MeetingService
 {
-    public function createMeeting($houseName, $date, $questions)
+    public function createMeeting(int $houseId, string $date, array $questions): Meeting
     {
-        $house = House::where('house_name', $houseName)->firstOrFail();
-
-        $meeting = Meeting::create([
-            'house_id_for_meetings' => $house->house_id,
-            'date' => $date,
-        ]);
-
-        foreach ($questions as $questionData) {
-            $question = Question::create([
-                'meeting_id_for_question' => $meeting->meeting_id,
-                'question' => $questionData['text'],
+        try {
+            $meeting = Meeting::create([
+                'house_id' => $houseId,
+                'date' => Carbon::parse($date),
             ]);
 
-            foreach ($questionData['answers'] as $answerText) {
-                Answer::create([
-                    'question_id_for_answers' => $question->question_id,
-                    'answer_text' => $answerText,
+            foreach ($questions as $questionData) {
+                $question = Question::create([
+                    'meeting_id' => $meeting->id,
+                    'question_text' => $questionData['text'],
                 ]);
-            }
-        }
 
-        return $meeting;
+                foreach ($questionData['answers'] as $answerText) {
+                    Answer::create([
+                        'question_id' => $question->id,
+                        'answer_text' => $answerText,
+                    ]);
+                }
+            }
+
+            return $meeting;
+        } catch (Exception $e) {
+            Log::error('Error creating meeting', ['message' => $e->getMessage()]);
+            throw new Exception('Ошибка при создании собрания.');
+        }
     }
 }
-
